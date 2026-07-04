@@ -102,7 +102,10 @@ def collect(repo, dest: Path):
             {
                 "source_id": repo["id"],
                 "source_name": repo["name"],
+                "source_url": repo["url"],
                 "tier": repo["tier"],
+                "license": repo.get("license", "UNKNOWN"),
+                "license_note": repo.get("license_note", ""),
                 "category": cat,
                 "name": name,
                 "description": description,
@@ -116,6 +119,8 @@ def main():
     catalog = []
     for repo in SOURCES:
         print(f"Scanning {repo['name']} ({repo['url']}) ...")
+        if repo.get("license") in (None, "NONE", "UNKNOWN"):
+            print(f"  ! license: {repo.get('license', 'UNKNOWN')} — {repo.get('license_note', 'no license info recorded')}")
         dest = clone_or_update(repo)
         if not dest.exists():
             print(f"  ! clone failed, skipping {repo['id']}")

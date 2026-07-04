@@ -61,14 +61,37 @@ Edit `sources.json` to add/remove repos. Each entry needs `id`,
 items are always listed first in the picker and win any name collision
 with a community item.
 
-| Repo | Tier | Notes |
-|---|---|---|
-| [anthropics/skills](https://github.com/anthropics/skills) | official | Anthropic's own skills |
-| [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | official | Anthropic-curated plugin directory |
-| [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | community | ~100k★, 28 agents / 119 skills / 60 commands |
-| [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | community | ~3.3k★, hook patterns |
-| [karanb192/claude-code-hooks](https://github.com/karanb192/claude-code-hooks) | community | Focused hook scripts (git safety, secret protection) |
-| [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | community | ~5.2k★, 330+ skills |
+| Repo | Tier | License | Notes |
+|---|---|---|---|
+| [anthropics/skills](https://github.com/anthropics/skills) | official | **none** ⚠️ | Anthropic's own skills; no LICENSE file, use via `/plugin install` |
+| [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | official | Apache-2.0 | Anthropic-curated plugin directory |
+| [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | community | MIT | ~100k★, 28 agents / 119 skills / 60 commands |
+| [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | community | **none** ⚠️ | ~3.3k★, hook patterns; no LICENSE file |
+| [karanb192/claude-code-hooks](https://github.com/karanb192/claude-code-hooks) | community | MIT | Focused hook scripts (git safety, secret protection) |
+| [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | community | MIT | ~5.2k★, 330+ skills |
+
+## License & Attribution
+
+**This repo's own code** (`scan.py`, `install.py`, `install.sh`,
+`install.ps1`) is MIT-licensed — see [LICENSE](LICENSE).
+
+**Everything this tool installs is not covered by that license.** Each
+item copied into `~/.claude/` remains governed by its *original*
+source repo's license, listed in the table above. This tool never
+bundles or redistributes third-party code in the repo itself — it only
+clones sources at run time (into a gitignored `cache/`) and copies
+files locally into your own `~/.claude/` on your explicit selection.
+
+Two sources currently have **no LICENSE file** (`anthropics/skills`,
+`disler/claude-code-hooks-mastery`), which under copyright law defaults
+to all-rights-reserved rather than an open grant to reuse. `install.py`
+flags these in the picker with `[!NO LICENSE]` and asks for explicit
+confirmation before copying anything from them — review the source
+repo yourself before confirming.
+
+Every successful install appends a line to `~/.claude/ATTRIBUTION.md`
+recording the item's name, source repo, license, and install path, so
+you always have a record of what came from where.
 
 ## Files
 
