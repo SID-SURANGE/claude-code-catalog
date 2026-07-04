@@ -1,0 +1,5 @@
+cache/
+catalog.json
+installed.json
+__pycache__/
+*.pyc

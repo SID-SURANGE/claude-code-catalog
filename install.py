@@ -1,0 +1,134 @@
+#!/usr/bin/env python3
+"""
+Interactive picker over catalog.json. Presents items grouped by category,
+lets the user select by number (comma/range: "1,3,5-8" or "all" or "none"),
+then copies chosen items into ~/.claude/{agents,skills,commands,hooks}/.
+
+Tracks what's been installed (and from where) in installed.json so
+re-running scan.py + install.py later can show what's new vs. already-installed.
+
+Usage:
+    python install.py            # interactive, all categories
+    python install.py --tier official   # only official-tier items
+    python install.py --category skill # only one category
+"""
+import argparse
+import json
+import shutil
+import sys
+from pathlib import Path
+
+sys.stdout.reconfigure(encoding="utf-8")
+
+ROOT = Path(__file__).parent
+CLAUDE_HOME = Path.home() / ".claude"
+CATEGORY_DIRS = {
+    "agent": CLAUDE_HOME / "agents",
+    "skill": CLAUDE_HOME / "skills",
+    "command": CLAUDE_HOME / "commands",
+    "hook": CLAUDE_HOME / "hooks",
+}
+INSTALLED_MANIFEST = ROOT / "installed.json"
+
+
+def load_installed():
+    if INSTALLED_MANIFEST.exists():
+        return json.loads(INSTALLED_MANIFEST.read_text())
+    return {}
+
+
+def save_installed(manifest):
+    INSTALLED_MANIFEST.write_text(json.dumps(manifest, indent=2))
+
+
+def parse_selection(raw, max_n):
+    raw = raw.strip().lower()
+    if raw in ("all", "a"):
+        return set(range(1, max_n + 1))
+    if raw in ("none", "n", ""):
+        return set()
+    chosen = set()
+    for chunk in raw.split(","):
+        chunk = chunk.strip()
+        if "-" in chunk:
+            lo, _, hi = chunk.partition("-")
+            chosen.update(range(int(lo), int(hi) + 1))
+        elif chunk:
+            chosen.add(int(chunk))
+    return {n for n in chosen if 1 <= n <= max_n}
+
+
+def install_item(item, source_root: Path):
+    src = source_root / item["source_id"] / item["rel_path"]
+    dest_dir = CATEGORY_DIRS[item["category"]]
+    dest_dir.mkdir(parents=True, exist_ok=True)
+
+    if item["category"] in ("agent", "command"):
+        dest = dest_dir / Path(item["rel_path"]).name
+    elif item["category"] == "skill":
+        # skills are usually a folder with SKILL.md; install the whole folder
+        skill_folder = src.parent
+        dest = dest_dir / skill_folder.name
+        if dest.exists():
+            shutil.rmtree(dest)
+        shutil.copytree(skill_folder, dest)
+        return dest
+    else:  # hook
+        dest = dest_dir / Path(item["rel_path"]).name
+
+    shutil.copy2(src, dest)
+    return dest
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--tier", choices=["official", "community"])
+    ap.add_argument("--category", choices=list(CATEGORY_DIRS))
+    args = ap.parse_args()
+
+    catalog_path = ROOT / "catalog.json"
+    if not catalog_path.exists():
+        print("catalog.json not found — run scan.py first.")
+        return
+    catalog = json.loads(catalog_path.read_text())
+
+    if args.tier:
+        catalog = [i for i in catalog if i["tier"] == args.tier]
+    if args.category:
+        catalog = [i for i in catalog if i["category"] == args.category]
+
+    installed = load_installed()
+
+    for category in ("agent", "skill", "command", "hook"):
+        items = [i for i in catalog if i["category"] == category]
+        if not items:
+            continue
+        print(f"\n=== {category.upper()}S ({len(items)}) ===")
+        for idx, item in enumerate(items, 1):
+            key = f"{item['category']}:{item['name'].lower()}"
+            tag = " [installed]" if key in installed else ""
+            tier_tag = "OFFICIAL" if item["tier"] == "official" else item["source_name"]
+            desc = item["description"][:90]
+            print(f"  {idx:>3}. ({tier_tag}) {item['name']}{tag} — {desc}")
+
+        raw = input(
+            f"\nSelect {category}s to install (e.g. 1,3,5-8 / all / none): "
+        )
+        chosen = parse_selection(raw, len(items))
+        for idx in chosen:
+            item = items[idx - 1]
+            dest = install_item(item, ROOT / "cache")
+            key = f"{item['category']}:{item['name'].lower()}"
+            installed[key] = {
+                "source": item["source_name"],
+                "source_id": item["source_id"],
+                "installed_to": str(dest),
+            }
+            print(f"  installed -> {dest}")
+
+    save_installed(installed)
+    print(f"\nDone. Manifest: {INSTALLED_MANIFEST}")
+
+
+if __name__ == "__main__":
+    main()

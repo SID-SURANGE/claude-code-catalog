@@ -1,0 +1,38 @@
+[
+  {
+    "id": "anthropics-skills",
+    "name": "Anthropic Official Skills",
+    "url": "https://github.com/anthropics/skills",
+    "tier": "official"
+  },
+  {
+    "id": "anthropics-plugins-official",
+    "name": "Anthropic Official Plugins",
+    "url": "https://github.com/anthropics/claude-plugins-official",
+    "tier": "official"
+  },
+  {
+    "id": "everything-claude-code",
+    "name": "Everything Claude Code (affaan-m)",
+    "url": "https://github.com/affaan-m/everything-claude-code",
+    "tier": "community"
+  },
+  {
+    "id": "disler-hooks-mastery",
+    "name": "Claude Code Hooks Mastery (disler)",
+    "url": "https://github.com/disler/claude-code-hooks-mastery",
+    "tier": "community"
+  },
+  {
+    "id": "karanb192-hooks",
+    "name": "Claude Code Hooks (karanb192)",
+    "url": "https://github.com/karanb192/claude-code-hooks",
+    "tier": "community"
+  },
+  {
+    "id": "alirezarezvani-claude-skills",
+    "name": "Claude Skills (alirezarezvani)",
+    "url": "https://github.com/alirezarezvani/claude-skills",
+    "tier": "community"
+  }
+]
