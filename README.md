@@ -42,12 +42,13 @@ unclear license is installed without you confirming it.
 ## ⚙️ How it works
 
 ```text
-┌──────────────┐   scan.py    ┌──────────────┐   install.py   ┌───────────────────┐
-│ sources.json │ ───────────► │ catalog.json │ ─────────────► │  ~/.claude/*        │
-│ (repos you   │  git clone/  │ (every item, │  numbered      │  + ATTRIBUTION.md  │
-│  trust)      │  pull + scan │  license-    │  picker +      │  + installed.json  │
-│              │              │  tagged)     │  license gate  │                    │
-└──────────────┘              └──────────────┘                └───────────────────┘
+                     scan.py                          install.py
++--------------+                    +--------------+                    +-------------------+
+| sources.json |                    | catalog.json |                    |    ~/.claude/*    |
+|  (repos you  | -----------------> | (every item, | -----------------> |  + ATTRIBUTION.md |
+|    trust)    |   git clone/pull   |   license-   |  numbered picker   |  + installed.json |
+|              |                    |   tagged)    |   + license gate   |                   |
++--------------+                    +--------------+                    +-------------------+
 ```
 
 Installs at the **user level** (`~/.claude/`), so what you pick
@@ -69,7 +70,7 @@ applies across every project on your machine, not just one repo.
 
 ## 🚀 Quick start
 
-Requires `git` and `python3` (both cross-platform, no other dependencies).
+Requires `git` and Python 3 (both cross-platform, no other dependencies).
 
 **macOS / Linux**
 ```bash
@@ -117,6 +118,11 @@ python3 install.py --tier official
 python3 install.py --category skill   # agent | skill | command | hook
 ```
 
+Before each category's list, you're prompted for an optional keyword
+to filter by name/description (e.g. `python`, `react`, `security`) —
+press Enter to see everything unfiltered. With 800+ skills in the
+catalog, this is how you actually find something instead of scrolling.
+
 At each prompt, select items by number: `1,3,5-8`, `all`, or `none`.
 
 Picking an item with no LICENSE file stops and asks first:
@@ -139,12 +145,19 @@ with a community item.
 |---|---|---|---|
 | [anthropics/skills](https://github.com/anthropics/skills) | official | **none** ⚠️ | Anthropic's own skills; no LICENSE file, use via `/plugin install` |
 | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | official | Apache-2.0 | Anthropic-curated plugin directory |
-| [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | community | MIT | ~100k★, 28 agents / 119 skills / 60 commands |
+| [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | community | MIT | ~100k★, 63 agents / 273 skills / 100 commands / 119 hooks |
 | [disler/claude-code-hooks-mastery](https://github.com/disler/claude-code-hooks-mastery) | community | **none** ⚠️ | ~3.3k★, hook patterns; no LICENSE file |
 | [karanb192/claude-code-hooks](https://github.com/karanb192/claude-code-hooks) | community | MIT | Focused hook scripts (git safety, secret protection) |
-| [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | community | MIT | ~5.2k★, 330+ skills |
-| [wshobson/agents](https://github.com/wshobson/agents) | community | MIT | Multi-harness plugin marketplace — 192 agents / 156 skills / 102 commands |
-| [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) | community | Apache-2.0 | 135 agents / 35 skills / 42 commands / 20 hooks |
+| [alirezarezvani/claude-skills](https://github.com/alirezarezvani/claude-skills) | community | MIT | ~5.2k★, 105 agents / 334 skills / 103 commands |
+| [wshobson/agents](https://github.com/wshobson/agents) | community | MIT | Multi-harness plugin marketplace — 176 agents / 156 skills / 80 commands |
+| [rohitg00/awesome-claude-code-toolkit](https://github.com/rohitg00/awesome-claude-code-toolkit) | community | Apache-2.0 | 131 agents / 34 skills / 231 commands / 16 hooks |
+
+Counts above are what `scan.py` currently extracts from each source
+*after* cross-source de-duplication — official-tier sources and
+alphabetically-earlier community sources win name collisions, so a
+source's contribution here can be lower than its own advertised
+totals. Run `python scan.py` for live numbers; they'll drift as
+upstream repos change.
 
 Adding a source doesn't require it to be spotless — it just requires
 its license to be recorded honestly in `sources.json` so the picker
