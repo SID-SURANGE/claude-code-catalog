@@ -62,6 +62,17 @@ def append_attribution(item, dest):
         )
 
 
+def filter_by_keyword(items, category):
+    raw = input(f"Filter {category}s by keyword (name/description), or Enter for all: ").strip().lower()
+    if not raw:
+        return items
+    matched = [i for i in items if raw in i["name"].lower() or raw in i["description"].lower()]
+    if not matched:
+        print(f"  no matches for '{raw}' — showing all {category}s instead.")
+        return items
+    return matched
+
+
 def parse_selection(raw, max_n):
     raw = raw.strip().lower()
     if raw in ("all", "a"):
@@ -124,7 +135,9 @@ def main():
         items = [i for i in catalog if i["category"] == category]
         if not items:
             continue
-        print(f"\n=== {category.upper()}S ({len(items)}) ===")
+        print(f"\n=== {category.upper()}S ({len(items)} total) ===")
+        items = filter_by_keyword(items, category)
+        print(f"--- showing {len(items)} {category}(s) ---")
         for idx, item in enumerate(items, 1):
             key = f"{item['category']}:{item['name'].lower()}"
             tag = " [installed]" if key in installed else ""

@@ -46,9 +46,15 @@ def clone_or_update(repo):
     return dest
 
 
+NON_ITEM_STEMS = {
+    "readme", "index", "license", "contributing",
+    "claude", "code_of_conduct", "security", "template",
+}
+
+
 def category_for_path(rel_path: Path):
     parts = {p.lower() for p in rel_path.parts}
-    if "skills" in parts or rel_path.name.upper() == "SKILL.MD":
+    if rel_path.name.upper() == "SKILL.MD":
         return "skill"
     if "agents" in parts:
         return "agent"
@@ -71,9 +77,15 @@ def collect(repo, dest: Path):
         if cat is None:
             continue
 
+        if cat == "hook" and path.suffix == ".md":
+            # real hooks are scripts (.sh/.js/.py/...); a .md here is documentation
+            continue
+
         if path.suffix == ".md":
             text = path.read_text(encoding="utf-8", errors="ignore")
             fm = parse_frontmatter(text)
+            if cat in ("agent", "command") and not fm and path.stem.lower() in NON_ITEM_STEMS:
+                continue
             name = fm.get("name") or path.stem
             description = fm.get("description") or ""
             if not description:
