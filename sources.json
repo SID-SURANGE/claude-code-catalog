@@ -46,5 +46,21 @@
     "tier": "community",
     "license": "MIT",
     "license_note": ""
+  },
+  {
+    "id": "wshobson-agents",
+    "name": "Agents Marketplace (wshobson)",
+    "url": "https://github.com/wshobson/agents",
+    "tier": "community",
+    "license": "MIT",
+    "license_note": ""
+  },
+  {
+    "id": "rohitg00-awesome-claude-code-toolkit",
+    "name": "Awesome Claude Code Toolkit (rohitg00)",
+    "url": "https://github.com/rohitg00/awesome-claude-code-toolkit",
+    "tier": "community",
+    "license": "Apache-2.0",
+    "license_note": ""
   }
 ]
