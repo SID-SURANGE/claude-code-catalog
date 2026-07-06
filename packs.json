@@ -1,0 +1,89 @@
+[
+  {
+    "id": "git-workflow",
+    "name": "Git Workflow Basics",
+    "description": "Everyday git commands: commit, commit+push+PR, and stale-branch cleanup.",
+    "items": [
+      { "category": "command", "name": "commit" },
+      { "category": "command", "name": "commit-push-pr" },
+      { "category": "command", "name": "clean_gone" }
+    ]
+  },
+  {
+    "id": "code-review-essentials",
+    "name": "Code Review Essentials",
+    "description": "Agents and a command for catching bugs, security issues, and silent failures before merge.",
+    "items": [
+      { "category": "agent", "name": "code-reviewer" },
+      { "category": "agent", "name": "security-auditor" },
+      { "category": "agent", "name": "silent-failure-hunter" },
+      { "category": "command", "name": "code-review" }
+    ]
+  },
+  {
+    "id": "plugin-dev",
+    "name": "Plugin & Skill Authoring",
+    "description": "Scaffolding and validation for building your own Claude Code plugins/agents/skills.",
+    "items": [
+      { "category": "skill", "name": "plugin-structure" },
+      { "category": "skill", "name": "write-a-skill" },
+      { "category": "agent", "name": "agent-creator" },
+      { "category": "agent", "name": "plugin-validator" },
+      { "category": "agent", "name": "skill-reviewer" },
+      { "category": "command", "name": "create-plugin" }
+    ]
+  },
+  {
+    "id": "docker-devops",
+    "name": "Docker & DevOps Basics",
+    "description": "Dockerfile authoring, optimization, and local MCP tunneling for containerized dev.",
+    "items": [
+      { "category": "skill", "name": "docker-development" },
+      { "category": "skill", "name": "docker-best-practices" },
+      { "category": "command", "name": "optimize-dockerfile" },
+      { "category": "command", "name": "create-docker-mcp-tunnel" }
+    ]
+  },
+  {
+    "id": "kubernetes-ops",
+    "name": "Kubernetes Operations",
+    "description": "Workload patterns, cluster operations, and a specialist agent for Kubernetes work.",
+    "items": [
+      { "category": "skill", "name": "kubernetes-patterns" },
+      { "category": "skill", "name": "kubernetes-operations" },
+      { "category": "agent", "name": "kubernetes-specialist" }
+    ]
+  },
+  {
+    "id": "react-frontend",
+    "name": "React Frontend Toolkit",
+    "description": "Modern React/Next.js patterns, testing, code review, and performance tuning.",
+    "items": [
+      { "category": "skill", "name": "react-patterns" },
+      { "category": "skill", "name": "react-testing" },
+      { "category": "command", "name": "react-review" },
+      { "category": "skill", "name": "react-performance" }
+    ]
+  },
+  {
+    "id": "python-backend",
+    "name": "Python Backend Essentials",
+    "description": "Idiomatic Python patterns, error handling, type safety, and a generalist Python agent.",
+    "items": [
+      { "category": "skill", "name": "python-patterns" },
+      { "category": "skill", "name": "python-error-handling" },
+      { "category": "skill", "name": "python-type-safety" },
+      { "category": "agent", "name": "python-pro" }
+    ]
+  },
+  {
+    "id": "testing-toolkit",
+    "name": "Testing Toolkit",
+    "description": "Web app testing, skill-quality testing, and React component testing in one bundle.",
+    "items": [
+      { "category": "skill", "name": "webapp-testing" },
+      { "category": "skill", "name": "skill-tester" },
+      { "category": "skill", "name": "react-testing" }
+    ]
+  }
+]

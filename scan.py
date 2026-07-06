@@ -6,32 +6,22 @@ Writes catalog.json — a flat list every install.py picker can render.
 
 Re-running re-pulls each repo (git pull) instead of re-cloning, so this
 is safe to run repeatedly to pick up upstream updates.
+
+The actual scanning/scoring/safety/dedup/LLM-review logic lives in the
+catalog/ package alongside this file; this script is just the CLI entry
+point that orchestrates it.
 """
+import argparse
 import json
-import re
 import subprocess
 import sys
-from pathlib import Path
+
+from catalog.llm_review import LLM_PROVIDERS, load_llm_cache, run_llm_review
+from catalog.parsing import collect
+from catalog.paths import CACHE, ROOT, SOURCES
+from catalog.safety import dedupe_catalog
 
 sys.stdout.reconfigure(encoding="utf-8")
-
-ROOT = Path(__file__).parent
-CACHE = ROOT / "cache"
-SOURCES = json.loads((ROOT / "sources.json").read_text())
-
-FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
-
-
-def parse_frontmatter(text):
-    m = FRONTMATTER_RE.match(text)
-    if not m:
-        return {}
-    fields = {}
-    for line in m.group(1).splitlines():
-        if ":" in line:
-            k, _, v = line.partition(":")
-            fields[k.strip()] = v.strip().strip('"')
-    return fields
 
 
 def clone_or_update(repo):
@@ -46,88 +36,7 @@ def clone_or_update(repo):
     return dest
 
 
-NON_ITEM_STEMS = {
-    "readme", "index", "license", "contributing",
-    "claude", "code_of_conduct", "security", "template",
-}
-
-
-def category_for_path(rel_path: Path):
-    parts = {p.lower() for p in rel_path.parts}
-    if rel_path.name.upper() == "SKILL.MD":
-        return "skill"
-    if "agents" in parts:
-        return "agent"
-    if "commands" in parts:
-        return "command"
-    if "hooks" in parts or "hook-scripts" in parts:
-        return "hook"
-    return None
-
-
-def collect(repo, dest: Path):
-    items = []
-    for path in dest.rglob("*"):
-        if not path.is_file():
-            continue
-        if ".git" in path.parts:
-            continue
-        rel = path.relative_to(dest)
-        cat = category_for_path(rel)
-        if cat is None:
-            continue
-
-        if cat == "hook" and path.suffix == ".md":
-            # real hooks are scripts (.sh/.js/.py/...); a .md here is documentation
-            continue
-
-        if path.suffix == ".md":
-            text = path.read_text(encoding="utf-8", errors="ignore")
-            fm = parse_frontmatter(text)
-            if cat in ("agent", "command") and not fm and path.stem.lower() in NON_ITEM_STEMS:
-                continue
-            name = fm.get("name") or path.stem
-            description = fm.get("description") or ""
-            if not description:
-                # first non-empty, non-heading line as a fallback description
-                for line in text.splitlines():
-                    line = line.strip().lstrip("#").strip()
-                    if line and not line.startswith("---"):
-                        description = line[:200]
-                        break
-        elif cat == "hook":
-            name = path.stem
-            description = ""
-            strip_chars = "#/*\"' \t"
-            for line in path.read_text(encoding="utf-8", errors="ignore").splitlines()[:15]:
-                line = line.strip().strip(strip_chars).strip()
-                if not line or line.startswith("!/") or line.startswith("{") or line.endswith("{"):
-                    continue
-                if re.fullmatch(r"[-=*#/]+", line):
-                    continue
-                description = line[:200]
-                break
-        else:
-            continue
-
-        items.append(
-            {
-                "source_id": repo["id"],
-                "source_name": repo["name"],
-                "source_url": repo["url"],
-                "tier": repo["tier"],
-                "license": repo.get("license", "UNKNOWN"),
-                "license_note": repo.get("license_note", ""),
-                "category": cat,
-                "name": name,
-                "description": description,
-                "rel_path": str(rel).replace("\\", "/"),
-            }
-        )
-    return items
-
-
-def main():
+def scan_all_sources():
     catalog = []
     for repo in SOURCES:
         print(f"Scanning {repo['name']} ({repo['url']}) ...")
@@ -140,21 +49,50 @@ def main():
         items = collect(repo, dest)
         print(f"  found {len(items)} installable items")
         catalog.extend(items)
+    return catalog
 
-    # de-dupe identical (category, name) pairs across sources, keep first (official tier sorted first)
-    catalog.sort(key=lambda i: (i["tier"] != "official", i["source_id"], i["category"], i["name"]))
-    seen = set()
-    deduped = []
-    for item in catalog:
-        key = (item["category"], item["name"].lower())
-        if key in seen:
-            continue
-        seen.add(key)
-        deduped.append(item)
+
+def build_arg_parser():
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--llm-review",
+        action="store_true",
+        help="optional second pass: LLM-judge flagged/borderline items (plain HTTP, no SDK — needs an API key or a local server)",
+    )
+    ap.add_argument(
+        "--llm-provider",
+        choices=list(LLM_PROVIDERS),
+        default="anthropic",
+        help="which provider to use for --llm-review (default: anthropic)",
+    )
+    ap.add_argument("--llm-model", help="override the provider's default model")
+    ap.add_argument("--llm-base-url", help="override the provider's default base URL (e.g. a different ollama host)")
+    return ap
+
+
+def main():
+    args = build_arg_parser().parse_args()
+
+    catalog = scan_all_sources()
+    deduped, skipped_by_kept = dedupe_catalog(catalog)
+
+    if args.llm_review:
+        run_llm_review(deduped, load_llm_cache(), args.llm_provider, args.llm_model, args.llm_base_url)
+
+    for item in deduped:
+        item.pop("_raw_text", None)
 
     out = ROOT / "catalog.json"
     out.write_text(json.dumps(deduped, indent=2))
     print(f"\nWrote {len(deduped)} items to {out}")
+
+    skipped_out = ROOT / "skipped_duplicates.json"
+    skipped_out.write_text(json.dumps(skipped_by_kept, indent=2))
+    if skipped_by_kept:
+        print(
+            f"Recorded {sum(len(v) for v in skipped_by_kept.values())} skipped "
+            f"duplicate(s) across {len(skipped_by_kept)} name collision(s) -> {skipped_out}"
+        )
 
 
 if __name__ == "__main__":
