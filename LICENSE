@@ -23,8 +23,8 @@ SOFTWARE.
 ---
 
 This license covers the scanner/installer code in this repository only
-(scan.py, install.py, install.sh, install.ps1). It does NOT cover the
-content of any third-party repo listed in sources.json — each item this
-tool installs remains governed by its own source repo's license. See
-README.md "License & Attribution" and the generated ~/.claude/ATTRIBUTION.md
-for details on each source's terms.
+(scan.py, install.py, catalog/, install.sh, install.ps1, tests/). It does
+NOT cover the content of any third-party repo listed in sources.json —
+each item this tool installs remains governed by its own source repo's
+license. See README.md "License & Attribution" and the generated
+~/.claude/ATTRIBUTION.md for details on each source's terms.
