@@ -303,7 +303,7 @@ still zero pip installs, for any of the six providers.
 See [SCANNING_RULES.md](SCANNING_RULES.md) for the full, step-by-step
 breakdown of every rule above — scoring formula, dedup ranking, every
 regex and why, and the false positives found (and fixed) by testing
-this against the real 2,124-item catalog.
+this against the real 2,137-item catalog.
 
 ---
 

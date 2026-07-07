@@ -156,7 +156,7 @@ so a real-looking secret with a generic *username* — `admin:S3cr3tP4ss@`
 ### The quoting/documentation rule
 
 The single biggest source of false positives, found by testing this
-against the real 2,124-item catalog: a security-conscious skill or hook
+against the real 2,137-item catalog: a security-conscious skill or hook
 often *quotes the exact bad pattern it defends against* — e.g. a hook
 literally named `block-dangerous-commands` contains the string
 `chmod 777` as its own detection rule, and Anthropic's own
