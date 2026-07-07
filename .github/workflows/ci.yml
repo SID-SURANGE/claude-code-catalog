@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+
+  test:
+    name: Unit tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run test suite
+        run: python -m unittest discover -s tests -v
+
+  first-party-frontmatter:
+    name: Validate first-party frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check every first-party agent/command has required frontmatter
+        run: |
+          failed=0
+          for f in first-party/agents/*.md first-party/commands/*.md; do
+            [ -f "$f" ] || continue
+            if ! grep -q "^name:" "$f"; then
+              echo "Missing 'name:' frontmatter in $f"
+              failed=1
+            fi
+            if ! grep -q "^description:" "$f"; then
+              echo "Missing 'description:' frontmatter in $f"
+              failed=1
+            fi
+          done
+          exit $failed
+
+      - name: Check every first-party hook is registered
+        run: |
+          failed=0
+          for f in first-party/hooks/*.py; do
+            [ -f "$f" ] || continue
+            name=$(basename "$f")
+            if ! grep -q "\"$name\"" first-party/registrations.json; then
+              echo "Hook $name is missing from first-party/registrations.json"
+              failed=1
+            fi
+          done
+          exit $failed
