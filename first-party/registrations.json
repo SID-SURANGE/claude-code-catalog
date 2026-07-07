@@ -1,0 +1,66 @@
+{
+  "goal-anchor.py": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/goal-anchor.py\""}
+        ]
+      }
+    ]
+  },
+  "stop-gate-review.py": {
+    "Stop": [
+      {
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/stop-gate-review.py\"", "timeout": 60}
+        ]
+      }
+    ]
+  },
+  "test-integrity.py": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/test-integrity.py\""}
+        ]
+      }
+    ]
+  },
+  "completion-verifier.py": {
+    "Stop": [
+      {
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/completion-verifier.py\""}
+        ]
+      }
+    ]
+  },
+  "structure-sentry.py": {
+    "PostToolUse": [
+      {
+        "matcher": "Write",
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/structure-sentry.py\""}
+        ]
+      }
+    ]
+  },
+  "claim-checker.py": {
+    "Stop": [
+      {
+        "hooks": [
+          {"type": "command", "command": "python \"%USERPROFILE%/.claude/hooks/claim-checker.py\""}
+        ]
+      }
+    ]
+  },
+  "_notes": {
+    "goal-anchor.py": "Pair with stop-gate-review.py — the logger is silent on its own. On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'.",
+    "stop-gate-review.py": "Needs an LLM: set ANTHROPIC_API_KEY (default provider) or CLAUDE_QUALITY_LLM_PROVIDER=ollama etc. Unconfigured = silent no-op. On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'.",
+    "test-integrity.py": "On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'.",
+    "completion-verifier.py": "On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'.",
+    "structure-sentry.py": "On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'.",
+    "claim-checker.py": "On macOS/Linux replace %USERPROFILE% with $HOME and 'python' with 'python3'."
+  }
+}

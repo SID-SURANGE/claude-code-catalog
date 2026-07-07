@@ -86,7 +86,9 @@ def collect(repo, dest: Path):
     for path in dest.rglob("*"):
         if not path.is_file():
             continue
-        if ".git" in path.parts:
+        if ".git" in path.parts or "__pycache__" in path.parts:
+            continue
+        if path.suffix in (".pyc", ".pyo"):
             continue
         rel = path.relative_to(dest)
         cat = category_for_path(rel)
@@ -149,6 +151,7 @@ def collect(repo, dest: Path):
                 "source_id": repo["id"],
                 "source_name": repo["name"],
                 "source_url": repo["url"],
+                "local_path": repo.get("path", ""),
                 "tier": repo["tier"],
                 "license": repo.get("license", "UNKNOWN"),
                 "license_note": repo.get("license_note", ""),

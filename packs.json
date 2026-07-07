@@ -1,5 +1,37 @@
 [
   {
+    "id": "first-party-quality",
+    "name": "First-Party Quality Suite",
+    "description": "This repo's own advisory quality layer — goal-deviation detection, LLM bug review on Stop, test-weakening/unfinished-work/structure/claim checks — plus the best external complements for what they don't cover.",
+    "items": [
+      { "category": "hook", "name": "goal-anchor" },
+      { "category": "hook", "name": "stop-gate-review" },
+      { "category": "hook", "name": "test-integrity" },
+      { "category": "hook", "name": "completion-verifier" },
+      { "category": "hook", "name": "structure-sentry" },
+      { "category": "hook", "name": "claim-checker" },
+      { "category": "agent", "name": "assumption-auditor" },
+      { "category": "agent", "name": "regression-cartographer" },
+      { "category": "command", "name": "quality-gauntlet" },
+      { "category": "command", "name": "hook-doctor" },
+      { "category": "agent", "name": "architecture-critic" },
+      { "category": "agent", "name": "pr-test-analyzer" },
+      { "category": "agent", "name": "security-auditor" }
+    ]
+  },
+  {
+    "id": "ai-architect-studio",
+    "name": "AI Architect Studio",
+    "description": "The /solution-design end-to-end pipeline (interview -> verified research -> HLD -> adversarial review -> LLD -> ADRs -> scaffold) plus the specialist agents its review stage delegates to.",
+    "items": [
+      { "category": "command", "name": "solution-design" },
+      { "category": "agent", "name": "architecture-critic" },
+      { "category": "agent", "name": "assumption-auditor" },
+      { "category": "agent", "name": "llm-architect" },
+      { "category": "agent", "name": "cloud-architect" }
+    ]
+  },
+  {
     "id": "git-workflow",
     "name": "Git Workflow Basics",
     "description": "Everyday git commands: commit, commit+push+PR, and stale-branch cleanup.",

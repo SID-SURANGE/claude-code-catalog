@@ -264,8 +264,28 @@ def print_item_detail(item, skipped_duplicates):
     print()
 
 
+def print_hook_registration(item):
+    """First-party hooks ship a registrations.json sidecar (at the source
+    root, outside hooks/ so it is never cataloged as an item). Print the
+    ready-to-paste settings.json block — we never auto-edit user settings."""
+    reg_file = ROOT / item["local_path"] / "registrations.json"
+    if not reg_file.exists():
+        return
+    registrations = json.loads(reg_file.read_text(encoding="utf-8"))
+    entry = registrations.get(Path(item["rel_path"]).name)
+    if not entry:
+        return
+    print(c(f"\n  To activate '{item['name']}', merge this into ~/.claude/settings.json under \"hooks\":", "yellow"))
+    print("  " + json.dumps(entry, indent=2).replace("\n", "\n  "))
+    if entry_note := registrations.get("_notes", {}).get(Path(item["rel_path"]).name):
+        print(c(f"  Note: {entry_note}", "dim"))
+
+
 def install_item(item, source_root: Path):
-    src = source_root / item["source_id"] / item["rel_path"]
+    if item.get("local_path"):
+        src = ROOT / item["local_path"] / item["rel_path"]
+    else:
+        src = source_root / item["source_id"] / item["rel_path"]
     dest_dir = CATEGORY_DIRS[item["category"]]
     dest_dir.mkdir(parents=True, exist_ok=True)
 
@@ -425,6 +445,8 @@ def main():
             }
             append_attribution(item, dest)
             print(f"  installed -> {dest}")
+            if item["category"] == "hook" and item.get("local_path"):
+                print_hook_registration(item)
 
     save_installed(installed)
     print(f"\nDone. Manifest: {INSTALLED_MANIFEST}")

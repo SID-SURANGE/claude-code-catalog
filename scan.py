@@ -25,6 +25,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 
 
 def clone_or_update(repo):
+    if repo.get("path"):
+        # Local first-party source: lives in this repo, nothing to clone.
+        return ROOT / repo["path"]
     dest = CACHE / repo["id"]
     if dest.exists():
         subprocess.run(["git", "-C", str(dest), "pull", "--ff-only", "--quiet"], check=False)
@@ -39,12 +42,13 @@ def clone_or_update(repo):
 def scan_all_sources():
     catalog = []
     for repo in SOURCES:
-        print(f"Scanning {repo['name']} ({repo['url']}) ...")
+        print(f"Scanning {repo['name']} ({repo.get('path') or repo['url']}) ...")
         if repo.get("license") in (None, "NONE", "UNKNOWN"):
             print(f"  ! license: {repo.get('license', 'UNKNOWN')} — {repo.get('license_note', 'no license info recorded')}")
         dest = clone_or_update(repo)
         if not dest.exists():
-            print(f"  ! clone failed, skipping {repo['id']}")
+            reason = "local path missing" if repo.get("path") else "clone failed"
+            print(f"  ! {reason}, skipping {repo['id']}")
             continue
         items = collect(repo, dest)
         print(f"  found {len(items)} installable items")

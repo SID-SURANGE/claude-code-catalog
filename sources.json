@@ -1,5 +1,14 @@
 [
   {
+    "id": "first-party",
+    "name": "First-Party Quality Suite (this repo)",
+    "url": "https://github.com/SID-SURANGE/claude-code-catalog",
+    "path": "first-party",
+    "tier": "official",
+    "license": "MIT",
+    "license_note": ""
+  },
+  {
     "id": "anthropics-skills",
     "name": "Anthropic Official Skills",
     "url": "https://github.com/anthropics/skills",

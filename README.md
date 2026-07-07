@@ -307,6 +307,55 @@ this against the real 2,124-item catalog.
 
 ---
 
+## 🧰 First-party quality suite
+
+Beyond aggregating external sources, this repo now ships its own items
+under `first-party/` — an advisory quality layer targeting six gaps that
+a survey of all 2,100+ cataloged items (and the wider ecosystem) showed
+nothing else covers: semantic goal-deviation detection, general
+correctness review as a hook, automatic structure critique of fresh AI
+output, test-weakening detection, unfinished-work detection, and
+claim-vs-reality verification.
+
+Design rules the whole suite follows:
+
+- **Advisory, never blocking** — hooks inject compact findings back into
+  the session (`additionalContext`); they never exit 2, never gate you.
+- **Silent when clean** — zero output, zero tokens in the common case.
+- **One LLM call per turn, max** — only `stop-gate-review` uses a model
+  (configurable provider, same zero-dependency `urllib` approach as
+  `--llm-review`; unconfigured = silent no-op), cached by diff hash.
+- **Original code** — written from scratch for this repo, MIT. Prior art
+  is cited in `first-party/hooks/README.md` as design reference only.
+
+| Item | Kind | What it does |
+|---|---|---|
+| `goal-anchor` | hook (UserPromptSubmit) | logs each prompt as a session goal |
+| `stop-gate-review` | hook (Stop) | one LLM pass: diff vs. logged goals (deviation) + real correctness defects |
+| `test-integrity` | hook (PostToolUse) | flags test weakening: deleted assertions, added skips/`.only`, loosened checks |
+| `completion-verifier` | hook (Stop) | flags TODO/stub/`NotImplementedError` lines *added this turn* |
+| `structure-sentry` | hook (PostToolUse) | flags duplicate-purpose new files, source in test dirs, verbatim copy-paste |
+| `claim-checker` | hook (Stop) | flags "tests pass"-style claims with no matching successful command in the transcript |
+| `assumption-auditor` | agent | extracts the diff's implicit assumptions, ranked by blast radius |
+| `regression-cartographer` | agent | maps callers/importers a diff can break; must-re-test checklist |
+| `/quality-gauntlet` | command | whole-repo battery -> scored `QUALITY_REPORT.md` |
+| `/hook-doctor` | command | diagnoses the suite's own installation (the "hooks silently stopped firing" fix) |
+| `/solution-design` | command | end-to-end AI-system design pipeline: staged interview -> web-verified research -> HLD (Mermaid/C4) -> adversarial review -> LLD -> ADRs -> confirm-gated repo scaffold (`--pack ai-architect-studio`) |
+
+Install everything (plus the best external complements) in one go:
+
+```bash
+python3 install.py --pack first-party-quality
+```
+
+Hooks only fire once registered: after each hook installs, `install.py`
+prints the exact JSON block to merge into `~/.claude/settings.json`
+(taken from `first-party/registrations.json` — it never edits your
+settings for you). Three of the hooks double as repo-wide scanners via
+`--scan`, which is exactly what `/quality-gauntlet` runs.
+
+---
+
 ## 📦 Sources
 
 Edit `sources.json` to add/remove repos. Each entry needs `id`,
@@ -314,8 +363,14 @@ Edit `sources.json` to add/remove repos. Each entry needs `id`,
 items are always listed first in the picker and win any name collision
 with a community item.
 
+Sources are usually external git repos, but an entry with a `path`
+instead of a remote-only `url` is scanned straight from a local folder —
+that's how `first-party/` joins the catalog with the same scoring,
+safety-scanning, and dedup as everything else.
+
 | Repo | Tier | License | Notes |
 |---|---|---|---|
+| `first-party/` (this repo) | official | MIT | the [first-party quality suite](#-first-party-quality-suite) above |
 | [anthropics/skills](https://github.com/anthropics/skills) | official | **none** ⚠️ | Anthropic's own skills; no LICENSE file, use via `/plugin install` |
 | [anthropics/claude-plugins-official](https://github.com/anthropics/claude-plugins-official) | official | Apache-2.0 | Anthropic-curated plugin directory |
 | [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | community | MIT | ~100k★, 66 agents / 277 skills / 100 commands / 119 hooks |
@@ -369,6 +424,7 @@ you always have a record of what came from where.
 | Path | What it is |
 |---|---|
 | `sources.json` | repo list you maintain |
+| `first-party/` | this repo's own agents/commands/hooks — the quality suite above |
 | `SCANNING_RULES.md` | step-by-step writeup of every scoring/dedup/safety rule, in plain language |
 | `cache/` | shallow git clones of each source (gitignored, `git pull`ed on re-scan) |
 | `catalog.json` | generated: flat list of every installable item found |
